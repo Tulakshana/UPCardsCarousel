@@ -66,19 +66,12 @@ The delegate is optional and will be notified when some events occur:
 
 #### Cards Deck
 
-Usually, the carousel will not display all the cards supplied by the data source at once. It will handle a infinite scrolling process by destroying and creating cards at both ends. The number of visible cards is given and can be customized through the following property:
-
-* `maxVisibleCardsCount` (default is 6)
 
 You can customize the duration of the card movement between the hidden deck and the visible deck, with this property:
 
 * `movingAnimationDuration` (defaut is 0.4 seconds)
 
-By default, the carousel will return to the top of the deck when making a double-tap on the first hidden card.
 
-![Double-tap to top](images/double-tap-to-top.png)
-
-You can disable this behaviour by setting the `doubleTapToTop` property to `NO`.
 
 ## License
 
