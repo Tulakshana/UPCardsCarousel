@@ -111,12 +111,14 @@ const static CGFloat        kLabelsContainerHeight          = 60;
     [_cardsContainer setAutoresizingMask:UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth];
     [_cardsContainer setBackgroundColor:[UIColor clearColor]];
     [_cardsContainer addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew context:nil];
+    _cardsContainer.clipsToBounds = TRUE;
     
     UISwipeGestureRecognizer *previousSwipe = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipeToPrevious:)];
-    [previousSwipe setDirection:UISwipeGestureRecognizerDirectionRight];
+    [previousSwipe setDirection:UISwipeGestureRecognizerDirectionLeft];
     [self addGestureRecognizer:previousSwipe];
+    
     UISwipeGestureRecognizer *nextSwipe = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipeToNext:)];
-    [nextSwipe setDirection:UISwipeGestureRecognizerDirectionLeft];
+    [nextSwipe setDirection:UISwipeGestureRecognizerDirectionRight];
     [self addGestureRecognizer:nextSwipe];
     
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTouchCard:)];
@@ -212,6 +214,8 @@ const static CGFloat        kLabelsContainerHeight          = 60;
     _visibleCardIndex = index - start;
     _visibleCardsOffset = start;
     
+    [self slideVisibleCardDown];
+    
     if([_dataSource respondsToSelector:@selector(carousel:labelForCardAtIndex:)]) {
         [_firstLabel setFrame:CGRectMake(20, 0, _labelBanner.frame.size.width-40, _labelBanner.frame.size.height)];
         [_secondLabel setFrame:CGRectMake(_labelBanner.frame.size.width+20, 0, _labelBanner.frame.size.width-40, _labelBanner.frame.size.height)];
@@ -276,33 +280,73 @@ const static CGFloat        kLabelsContainerHeight          = 60;
          * Setting a flexible top margin auto-resizing mask to the cards doesn't work.
          * So do it manually.
          */
+//        for(int i = 0; i < [_visibleCards count]; i++) {
+//            UIImageView *card = [_visibleCards objectAtIndex:i];
+//            CGPoint center;
+//            if(i < _visibleCardIndex) {
+//                int yOffset = arc4random()%20 - 10;
+//                center = CGPointMake(40-card.frame.size.width/2, _cardsContainer.frame.size.height/2 + yOffset);
+//            } else {
+//                center = CGPointMake(10+_cardsContainer.frame.size.width/2, _cardsContainer.frame.size.height/2);
+//            }
+//            [card setCenter:center];
+//        }
+        
         for(int i = 0; i < [_visibleCards count]; i++) {
             UIImageView *card = [_visibleCards objectAtIndex:i];
-            CGPoint center;
-            if(i < _visibleCardIndex) {
-                int yOffset = arc4random()%20 - 10;
-                center = CGPointMake(40-card.frame.size.width/2, _cardsContainer.frame.size.height/2 + yOffset);
-            } else {
-                center = CGPointMake(10+_cardsContainer.frame.size.width/2, _cardsContainer.frame.size.height/2);
-            }
+            CGPoint center = _cardsContainer.center;
             [card setCenter:center];
         }
+
     }
 }
 
 - (void)positionCard:(UIView*)card toVisible:(BOOL)visible
 {
     CGPoint center;
-    if(visible) {
-        center = CGPointMake(10+_cardsContainer.frame.size.width/2, _cardsContainer.frame.size.height/2);
-    } else {
-        int yOffset = arc4random()%20 - 10;
-        center = CGPointMake(40-card.frame.size.width/2, _cardsContainer.frame.size.height/2 + yOffset);
+//    if(visible) {
+//        center = CGPointMake(10+_cardsContainer.frame.size.width/2, _cardsContainer.frame.size.height/2);
+//    } else {
+//        int yOffset = arc4random()%20 - 10;
+//        center = CGPointMake(40-card.frame.size.width/2, _cardsContainer.frame.size.height/2 + yOffset);
+//    }
+//    int radians = arc4random()%20 - 10;
+//    float angle = (M_PI * (radians) / 180.0);
+//    [card.layer setAffineTransform:CGAffineTransformMakeRotation(angle)];
+    
+    if (visible){
+        center = _cardsContainer.center;
+    }else {
+        center = CGPointMake(_cardsContainer.center.x + _cardsContainer.frame.origin.x + _cardsContainer.frame.size.width, _cardsContainer.center.y);
     }
     
-    int radians = arc4random()%20 - 10;
-    float angle = (M_PI * (radians) / 180.0);
-    [card.layer setAffineTransform:CGAffineTransformMakeRotation(angle)];
+    
+    
+    [card setCenter:center];
+}
+
+- (void)slideVisibleCardDown{
+    
+    [UIView animateWithDuration:self.movingAnimationDuration
+                          delay:0
+                        options:UIViewAnimationOptionCurveEaseInOut|UIViewAnimationOptionAllowUserInteraction
+                     animations:^{
+                         for (UIView *card in _visibleCards) {
+                             CGPoint center = CGPointMake(card.center.x, _cardsContainer.center.y);
+                             [card setCenter:center];
+                         }
+                         UIView *visibleCard = [_visibleCards objectAtIndex:_visibleCardIndex];
+                         [self positionCard:visibleCard offsetY:10];
+                     } completion:^(BOOL finished) {
+
+                     }];
+    
+
+}
+
+- (void)positionCard:(UIView*)card offsetY:(float)y
+{
+    CGPoint center = CGPointMake(card.center.x, _cardsContainer.center.y + y);
     [card setCenter:center];
 }
 
@@ -333,6 +377,7 @@ const static CGFloat        kLabelsContainerHeight          = 60;
         UIView *newCard = [_dataSource carousel:self viewForCardAtIndex:newCardIndex];
         [_visibleCards insertObject:newCard atIndex:newCardVisibleIndex];
         [newCard setUserInteractionEnabled:YES];
+        
         [self positionCard:newCard toVisible:(wayValue == 1)];
         [newCard.layer setZPosition:newCardZPosition];
         [newCard setAlpha:0.0f];
@@ -359,11 +404,68 @@ const static CGFloat        kLabelsContainerHeight          = 60;
     }
 }
 
+#pragma mark - 
 
-#pragma mark - Cards Interactions
+- (void)showNext{
+    if(_visibleCardIndex >= [_visibleCards count]-1)
+        return;
+    
+    UIView *movedCard = [_visibleCards objectAtIndex:_visibleCardIndex];
+    
+    NSUInteger zIndex = _visibleCardIndex;
+    
+    _visibleCardIndex++;
+    
+    
+    NSUInteger displayedCardIndex = _visibleCardsOffset+_visibleCardIndex;
+    NSUInteger hiddenCardIndex = displayedCardIndex-1;
+    if(_delegate) {
+        if([_delegate respondsToSelector:@selector(carousel:willHideCardAtIndex:)])
+            [_delegate carousel:self willHideCardAtIndex:hiddenCardIndex];
+        if([_delegate respondsToSelector:@selector(carousel:willDisplayCardAtIndex:)])
+            [_delegate carousel:self willDisplayCardAtIndex:displayedCardIndex];
+    }
+    
+    
+    
+    [UIView animateWithDuration:self.movingAnimationDuration
+                          delay:0
+                        options:UIViewAnimationOptionCurveEaseInOut|UIViewAnimationOptionAllowUserInteraction
+                     animations:^{
+                         [self positionCard:movedCard toVisible:NO];
+                         
+                         [movedCard.layer setZPosition:_movingDeckZPositionOffset + zIndex];
+                     } completion:^(BOOL finished) {
+                         NSUInteger movedCardIndex = [_visibleCards indexOfObject:movedCard];
+                         NSInteger zPosition = _hiddenDeckZPositionOffset;
+                         if(movedCardIndex > 0 && movedCardIndex < [_visibleCards count]) {
+                             UIView *previousCard = [_visibleCards objectAtIndex:movedCardIndex-1];
+                             zPosition = [previousCard.layer zPosition] + 1;
+                         }
+                         [movedCard.layer setZPosition:zPosition];
+                         
+                         
+                         
+                         if(_delegate) {
+                             if([_delegate respondsToSelector:@selector(carousel:didHideCardAtIndex:)])
+                                 [_delegate carousel:self didHideCardAtIndex:hiddenCardIndex];
+                             if([_delegate respondsToSelector:@selector(carousel:didDisplayCardAtIndex:)])
+                                 [_delegate carousel:self didDisplayCardAtIndex:displayedCardIndex];
+                         }
+                     }];
+    
+    [self slideVisibleCardDown];
+    
+    if([_visibleCards count] == self.maxVisibleCardsCount && _visibleCardIndex > [_visibleCards count] / 2)
+        [self addInfiniteCardsForWay:@1];
+    
+    if([_dataSource respondsToSelector:@selector(carousel:labelForCardAtIndex:)]) {
+        NSString *label = [_dataSource carousel:self labelForCardAtIndex:_visibleCardIndex + _visibleCardsOffset];
+        [self performSelector:@selector(showNextLabelWithText:) withObject:label afterDelay:.1f];
+    }
+}
 
-- (void)didSwipeToPrevious:(UISwipeGestureRecognizer*)swipeGesture
-{
+- (void)showPrevious{
     if(_visibleCardIndex == 0)
         return;
     
@@ -385,24 +487,29 @@ const static CGFloat        kLabelsContainerHeight          = 60;
                           delay:0
                         options:UIViewAnimationOptionCurveEaseInOut|UIViewAnimationOptionAllowUserInteraction
                      animations:^{
-        [self positionCard:movedCard toVisible:YES];
-        [movedCard.layer setZPosition:_movingDeckZPositionOffset + zIndex];
-    } completion:^(BOOL finished) {
-        NSUInteger movedCardIndex = [_visibleCards indexOfObject:movedCard];
-        NSInteger zPosition = _visibleDeckZPositionOffset;
-        if(movedCardIndex < [_visibleCards count] - 1) {
-            UIView *nextCard = [_visibleCards objectAtIndex:movedCardIndex+1];
-            zPosition = [nextCard.layer zPosition] + 1;
-        }
-        [movedCard.layer setZPosition:zPosition];
-        
-        if(_delegate) {
-            if([_delegate respondsToSelector:@selector(carousel:didHideCardAtIndex:)])
-                [_delegate carousel:self didHideCardAtIndex:hiddenCardIndex];
-            if([_delegate respondsToSelector:@selector(carousel:didDisplayCardAtIndex:)])
-                [_delegate carousel:self didDisplayCardAtIndex:displayedCardIndex];
-        }
-    }];
+                         [self positionCard:movedCard toVisible:YES];
+                         
+                         [movedCard.layer setZPosition:_movingDeckZPositionOffset + zIndex];
+                     } completion:^(BOOL finished) {
+                         NSUInteger movedCardIndex = [_visibleCards indexOfObject:movedCard];
+                         NSInteger zPosition = _visibleDeckZPositionOffset;
+                         if(movedCardIndex < [_visibleCards count] - 1) {
+                             UIView *nextCard = [_visibleCards objectAtIndex:movedCardIndex+1];
+                             zPosition = [nextCard.layer zPosition] + 1;
+                         }
+                         [movedCard.layer setZPosition:zPosition];
+                         
+                         
+                         
+                         if(_delegate) {
+                             if([_delegate respondsToSelector:@selector(carousel:didHideCardAtIndex:)])
+                                 [_delegate carousel:self didHideCardAtIndex:hiddenCardIndex];
+                             if([_delegate respondsToSelector:@selector(carousel:didDisplayCardAtIndex:)])
+                                 [_delegate carousel:self didDisplayCardAtIndex:displayedCardIndex];
+                         }
+                     }];
+    
+    [self slideVisibleCardDown];
     
     if([_visibleCards count] == self.maxVisibleCardsCount && _visibleCardIndex < [_visibleCards count] / 2)
         [self addInfiniteCardsForWay:@-1];
@@ -413,56 +520,17 @@ const static CGFloat        kLabelsContainerHeight          = 60;
     }
 }
 
+#pragma mark - Cards Interactions
+
+- (void)didSwipeToPrevious:(UISwipeGestureRecognizer*)swipeGesture
+{
+    [self showPrevious];
+}
+
 
 - (void)didSwipeToNext:(UISwipeGestureRecognizer*)swipeGesture
 {
-    if(_visibleCardIndex >= [_visibleCards count]-1)
-        return;
-    
-    UIView *movedCard = [_visibleCards objectAtIndex:_visibleCardIndex];
-    NSUInteger zIndex = _visibleCardIndex;
-    
-    _visibleCardIndex++;
-    
-    NSUInteger displayedCardIndex = _visibleCardsOffset+_visibleCardIndex;
-    NSUInteger hiddenCardIndex = displayedCardIndex-1;
-    if(_delegate) {
-        if([_delegate respondsToSelector:@selector(carousel:willHideCardAtIndex:)])
-            [_delegate carousel:self willHideCardAtIndex:hiddenCardIndex];
-        if([_delegate respondsToSelector:@selector(carousel:willDisplayCardAtIndex:)])
-            [_delegate carousel:self willDisplayCardAtIndex:displayedCardIndex];
-    }
-    
-    [UIView animateWithDuration:self.movingAnimationDuration
-                          delay:0
-                        options:UIViewAnimationOptionCurveEaseInOut|UIViewAnimationOptionAllowUserInteraction
-                     animations:^{
-        [self positionCard:movedCard toVisible:NO];
-        [movedCard.layer setZPosition:_movingDeckZPositionOffset + zIndex];
-    } completion:^(BOOL finished) {
-        NSUInteger movedCardIndex = [_visibleCards indexOfObject:movedCard];
-        NSInteger zPosition = _hiddenDeckZPositionOffset;
-        if(movedCardIndex > 0 && movedCardIndex < [_visibleCards count]) {
-            UIView *previousCard = [_visibleCards objectAtIndex:movedCardIndex-1];
-            zPosition = [previousCard.layer zPosition] + 1;
-        }
-        [movedCard.layer setZPosition:zPosition];
-        
-        if(_delegate) {
-            if([_delegate respondsToSelector:@selector(carousel:didHideCardAtIndex:)])
-                [_delegate carousel:self didHideCardAtIndex:hiddenCardIndex];
-            if([_delegate respondsToSelector:@selector(carousel:didDisplayCardAtIndex:)])
-                [_delegate carousel:self didDisplayCardAtIndex:displayedCardIndex];
-        }
-    }];
-    
-    if([_visibleCards count] == self.maxVisibleCardsCount && _visibleCardIndex > [_visibleCards count] / 2)
-        [self addInfiniteCardsForWay:@1];
-    
-    if([_dataSource respondsToSelector:@selector(carousel:labelForCardAtIndex:)]) {
-        NSString *label = [_dataSource carousel:self labelForCardAtIndex:_visibleCardIndex + _visibleCardsOffset];
-        [self performSelector:@selector(showNextLabelWithText:) withObject:label afterDelay:.1f];
-    }
+    [self showNext];
 }
 
 - (void)didDoubleTap:(UITapGestureRecognizer*)tapGesture

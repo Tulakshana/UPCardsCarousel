@@ -11,7 +11,10 @@
 
 const static int kCardsCount = 20;
 
-@interface ViewController ()
+@interface ViewController (){
+    IBOutlet UPCardsCarousel *carousel;
+}
+
 
 @end
 
@@ -21,17 +24,25 @@ const static int kCardsCount = 20;
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    UPCardsCarousel *carousel = [[UPCardsCarousel alloc] initWithFrame:CGRectMake(0, 20, self.view.frame.size.width, self.view.frame.size.height-20)];
-    [carousel setAutoresizingMask:UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth];
-    [carousel.labelBanner setBackgroundColor:[UIColor colorWithRed:112./255. green:47./255. blue:168./255. alpha:1.]];
-    [carousel setLabelFont:[UIFont boldSystemFontOfSize:17.0f]];
-    [carousel setLabelTextColor:[UIColor whiteColor]];
+//    UPCardsCarousel *carousel = [[UPCardsCarousel alloc] initWithFrame:CGRectMake(0, 20, self.view.frame.size.width, self.view.frame.size.height-20)];
+//    [carousel setAutoresizingMask:UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth];
+//    [carousel.labelBanner setBackgroundColor:[UIColor colorWithRed:112./255. green:47./255. blue:168./255. alpha:1.]];
+//    [carousel setLabelFont:[UIFont boldSystemFontOfSize:17.0f]];
+//    [carousel setLabelTextColor:[UIColor whiteColor]];
+    carousel.labelBanner.hidden = true;
+
     [carousel setDelegate:self];
     [carousel setDataSource:self];
-    [self.view addSubview:carousel];
+
+//    [self.view addSubview:carousel];
     
 }
 
+- (void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    
+    [carousel reloadData];
+}
 
 #pragma mark - CardsCarouselDataSource Methods
 
@@ -88,6 +99,16 @@ const static int kCardsCount = 20;
     [cardView addSubview:labelView];
     
     return cardView;
+}
+
+#pragma mark - 
+
+- (IBAction)btnNextTapped:(id)sender{
+    [carousel showNext];
+}
+
+- (IBAction)btnPreviousTapped:(id)sender{
+    [carousel showPrevious];
 }
 
 

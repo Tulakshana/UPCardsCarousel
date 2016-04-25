@@ -49,6 +49,9 @@ typedef enum {
 - (void)setLabelFont:(UIFont *)font;
 - (void)setLabelTextColor:(UIColor*)color;
 
+- (void)showPrevious;
+- (void)showNext;
+
 @end
 
 
