@@ -46,9 +46,6 @@ typedef enum {
 
 - (UIView*)cardAtIndex:(NSUInteger)index;
 
-- (void)setLabelFont:(UIFont *)font;
-- (void)setLabelTextColor:(UIColor*)color;
-
 - (void)showPrevious;
 - (void)showNext;
 
@@ -60,10 +57,6 @@ typedef enum {
 @required
 - (NSUInteger)numberOfCardsInCarousel:(UPCardsCarousel *)carousel;
 - (UIView *)carousel:(UPCardsCarousel *)carousel viewForCardAtIndex:(NSUInteger)index;
-
-@optional
-/* If the data source doesn't implement this method, the label banner will not be displayed */
-- (NSString *)carousel:(UPCardsCarousel *)carousel labelForCardAtIndex:(NSUInteger)index;
 
 @end
 
