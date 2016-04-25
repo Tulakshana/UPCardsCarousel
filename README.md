@@ -13,17 +13,6 @@ Works for iPhone.
 
 ## Installation
 
-### CocoaPods
-
-UPCardsCarousel is available through [CocoaPods](http://cocoapods.org). To install
-it, simply add the following line to your Podfile:
-
-```
-pod "UPCardsCarousel"
-```
-
-### Manual
-
 Simply copy the folder `UPCardsCarousel` to your project and import it in XCode.
 
 ## Usage
@@ -52,9 +41,6 @@ The data source informs the carousel about the total number of cards and the con
 * `- (NSUInteger)numberOfCardsInCarousel:(UPCardsCarousel *)carousel` (required)
 * `- (UIView *)carousel:(UPCardsCarousel *)carousel viewForCardAtIndex:(NSUInteger)index` (required)
 
-The labels in the banner are given with an optional method. If the data source doesn't implement this method, the label banner will not be displayed.
-
-* `- (NSString *)carousel:(UPCardsCarousel *)carousel labelForCardAtIndex:(NSUInteger)index` (optional)
 
 ### Delegate
 
@@ -93,20 +79,6 @@ By default, the carousel will return to the top of the deck when making a double
 ![Double-tap to top](images/double-tap-to-top.png)
 
 You can disable this behaviour by setting the `doubleTapToTop` property to `NO`.
-
-#### Labels Banner
-
-You can customize the text font and color of the banner through these two methods:
-
-* `- (void)setLabelFont:(UIFont *)font` (default is system font)
-* `- (void)setLabelTextColor:(UIColor*)color` (default is `[UIColor blackColor]`)
-
-You can choose between two locations for the banner through the `labelBannerPosition` property:
-
-* `UPCardsCarouselLabelBannerLocation_bottom` - the banner will be located below the cards deck (default)
-* `UPCardsCarouselLabelBannerLocation_top` - the banner will be located above the cards deck
-
-Finally, you also have access to the banner view object through the `labelBanner` property so you can customize it as you want.
 
 ## License
 
