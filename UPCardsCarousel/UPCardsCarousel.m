@@ -281,6 +281,8 @@ const static CGFloat        kLabelsContainerHeight          = 60;
 
 - (void)slideVisibleCardDown{
     
+    NSInteger offset = 10;
+    
     [UIView animateWithDuration:self.movingAnimationDuration
                           delay:0
                         options:UIViewAnimationOptionCurveEaseInOut|UIViewAnimationOptionAllowUserInteraction
@@ -288,9 +290,16 @@ const static CGFloat        kLabelsContainerHeight          = 60;
                          for (UIView *card in _visibleCards) {
                              CGPoint center = CGPointMake(card.center.x, _cardsContainer.center.y);
                              [card setCenter:center];
+                             
+                             
+                             
+                             card.alpha = 0.25;
                          }
                          UIView *visibleCard = [_visibleCards objectAtIndex:_visibleCardIndex];
-                         [self positionCard:visibleCard offsetY:10];
+
+                         
+                         [self positionCard:visibleCard offsetY:offset];
+                         visibleCard.alpha = 1.0;
                      } completion:^(BOOL finished) {
 
                      }];
